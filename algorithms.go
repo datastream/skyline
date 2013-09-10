@@ -1,7 +1,6 @@
 package skyline
 
 import (
-	"github.com/GaryBoone/GoStats/stats"
 	"github.com/VividCortex/ewma"
 	"math"
 	"sort"
@@ -13,95 +12,6 @@ import (
 // timeseries is anomalous or not.
 
 // To add an algorithm, define it here, and add its name to settings.ALGORITHMS
-
-const (
-	FULL_DURATION = 1
-)
-
-type TimePoint struct {
-	timestamp int64    //x time
-	value     float64  //y value
-}
-
-func TimeArray(timeseries []TimePoint) []int64 {
-	var t []int64
-	for _, val := range timeseries {
-		t = append(t, val.timestamp)
-	}
-	return t
-}
-
-func ValueArray(timeseries []TimePoint) []float64 {
-	var v []float64
-	for _, val := range timeseries {
-		v = append(v, val.value)
-	}
-	return v
-}
-
-func TimeValueArray(timeseries []TimePoint) ([]int64, []float64) {
-	var v []float64
-	var t []int64
-	for _, val := range timeseries {
-		t = append(t, val.timestamp)
-		v = append(v, val.value)
-	}
-	return t, v
-}
-
-// series.mean
-func Mean(series []float64) float64 {
-	if len(series) == 0 {
-		return 0
-	}
-	sum := 0.0
-	for _, val := range series {
-		sum += val
-	}
-	return sum / float64(len(series))
-}
-
-// series.median
-func Median(series []float64) float64 {
-	var median float64
-	Len := len(series)
-	lhs := (Len - 1) / 2
-	rhs := Len / 2
-	if Len == 0 {
-		return 0.0
-	}
-	if lhs == rhs {
-		median = series[lhs]
-	} else {
-		median = (series[lhs] + series[rhs]) / 2.0
-	}
-	return median
-}
-
-// series.std
-func Std(series []float64) float64 {
-	mean := Mean(series)
-	sum := 0.0
-	for _, val := range series {
-		sum += math.Pow(val - mean, 2)
-	}
-	return math.Sqrt(sum)
-}
-
-// ewmstd
-func ewmstd(series []float64, com float64) float64 {
-	m2nd := ewma.NewMovingAverage(com)
-	m1st := ewma.NewMovingAverage(com)
-	for _, val := range series {
-		m2nd.Add(val * val)
-	}
-	for _, val := range series {
-		m1st.Add(val)
-	}
-	result := m2nd.Value() - math.Pow(m1st.Value(), 2)
-	result *= (1.0 + 2.0*com) / (2.0 * com)
-	return math.Sqrt(result)
-}
 
 // This is a utility function used to calculate the average of the last three
 // datapoints in the series as a measure, instead of just the last datapoint.
@@ -221,25 +131,14 @@ func MeanSubtractionCumulation(timeseries []TimePoint) bool {
 		series[i] = val - mean
 	}
 	stdDev := Std(series)
-	/*
-	e := ewma.NewMovingAverage(15)
-	for _, val := range series {
-		e.Add(val)
-	}
-	expAverage := e.Value()
-	*/
+	// expAverage = pandas.stats.moments.ewma(series, com=15)
 	return math.Abs(series[len(series)-1]) > 3*stdDev
 }
 
 // A timeseries is anomalous if the average of the last three datapoints
 // on a projected least squares model is greater than three sigma.
 func LeastSquares(timeseries []TimePoint) bool {
-	var r stats.Regression
-	for _, val := range timeseries {
-		r.Update(float64(val.timestamp), val.value)
-	}
-	m := r.Slope()
-	c := r.Intercept()
+	m, c := linearRegressionLSE(timeseries)
 	var errs []float64
 	for _, val := range timeseries {
 		projected := m * float64(val.timestamp) + c
@@ -259,24 +158,22 @@ func LeastSquares(timeseries []TimePoint) bool {
 // that number depending on your data)
 // Returns: the size of the bin which contains the tail_avg. Smaller bin size
 // means more anomalous.
-func HistogramBins(timeseries []TimePoint) {
-	//series := ValueArray(timeseries)
-	//t := TailAvg(series)
-	/*
-	   series = scipy.array([x[1] for x in timeseries])
-	   t = tail_avg(timeseries)
-	   h = np.histogram(series, bins=15)
-	   bins = h[1]
-	   for index, bin_size in enumerate(h[0]):
-	       if bin_size <= 20:
-	           if index == 0:
-	               if t <= bins[0]:
-	                   return True
-	           elif t >= bins[index] and t < bins[index + 1]:
-	                   return True
-
-	   return False
-	*/
+func HistogramBins(timeseries []TimePoint) bool {
+	series := ValueArray(timeseries)
+	t := TailAvg(series)
+	hist, bins := histogram(series, 15)
+	for i, v := range hist {
+		if v <= 20 {
+			if i == 0 {
+				if t <= bins[0] {
+					return true
+				}
+			} else if t > bins[i] && t < bins[i+1] {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // A timeseries is anomalous if 2 sample Kolmogorov-Smirnov test indicates
