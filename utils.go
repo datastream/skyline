@@ -1,8 +1,8 @@
 package skyline
 
 type TimePoint struct {
-	timestamp int64    //x time
-	value     float64  //y value
+	timestamp int64   //x time
+	value     float64 //y value
 }
 
 func TimeArray(timeseries []TimePoint) []int64 {

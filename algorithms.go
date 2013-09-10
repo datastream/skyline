@@ -36,7 +36,7 @@ func MedianAbsoluteDeviation(timeseries []TimePoint) bool {
 	median := Median(series)
 	var demedianed []float64
 	for _, val := range series {
-		demedianed = append(demedianed, math.Abs(val - median))
+		demedianed = append(demedianed, math.Abs(val-median))
 	}
 	sort.Float64s(demedianed)
 	median_deviation := Median(demedianed)
@@ -53,15 +53,15 @@ func MedianAbsoluteDeviation(timeseries []TimePoint) bool {
 // A timeseries is anomalous if the Z score is greater than the Grubb's score.
 func Grubbs(timeseries []TimePoint) bool {
 	/*
-	series := ValueArray(timeseries)
-	stdDev := Std(series)
-	mean := Mean(series)
-	tail_average := TailAvg(series)
-	z_score := (tail_average - mean) / stdDev
-	len_series := len(series)
+		series := ValueArray(timeseries)
+		stdDev := Std(series)
+		mean := Mean(series)
+		tail_average := TailAvg(series)
+		z_score := (tail_average - mean) / stdDev
+		len_series := len(series)
 
-	t := stat.NextStudentsT(float64(len_series - 2))
-	 */
+		t := stat.NextStudentsT(float64(len_series - 2))
+	*/
 	// scipy.stats.t.isf(len_series -2, 1 - 0.05, len_series -2)
 	// len_series - 2 is studentsT's arg
 	// t.isf(a,b) == t.ppf(1-a,b)
@@ -69,11 +69,11 @@ func Grubbs(timeseries []TimePoint) bool {
 	// need StudentsT_InvCDF_For, TINV
 	// stat.StudentsT_InvCDF_For(len_series-2, 1-0.05/(2*len_series), 1)
 	/*
-	threshold := 0.0
-	threshold_squared := threshold * threshold
-	grubbs_score := (float64(len_series - 1) / math.Sqrt(float64(len_series))) * math.Sqrt(threshold_squared/(float64(len_series-2)+threshold_squared))
-	return z_score > grubbs_score
-	 */
+		threshold := 0.0
+		threshold_squared := threshold * threshold
+		grubbs_score := (float64(len_series - 1) / math.Sqrt(float64(len_series))) * math.Sqrt(threshold_squared/(float64(len_series-2)+threshold_squared))
+		return z_score > grubbs_score
+	*/
 	return true
 }
 
@@ -141,8 +141,8 @@ func LeastSquares(timeseries []TimePoint) bool {
 	m, c := linearRegressionLSE(timeseries)
 	var errs []float64
 	for _, val := range timeseries {
-		projected := m * float64(val.timestamp) + c
-		errs = append(errs, val.value - projected)
+		projected := m*float64(val.timestamp) + c
+		errs = append(errs, val.value-projected)
 	}
 	l := len(errs)
 	if l < 3 {
@@ -197,26 +197,26 @@ func KsTest(timeseries []TimePoint) bool {
 	if len(reference) < 20 || len(probe) < 20 {
 		return false
 	}
-	/*
-	ks_d,ks_p_value := scipy.stats.ks_2samp(reference, probe)
+	ks_d, ks_p_value := KS2Samp(reference, probe)
 	if ks_p_value < 0.05 && ks_d > 0.5 {
-		adf := sm.tsa.stattools.adfuller(reference, 10)
-		if adf[1] < 0.05 {
-			return true
-		}
+		/*
+			adf := sm.tsa.stattools.adfuller(reference, 10)
+			if adf[1] < 0.05 {
+				return true
+			}
+		*/
 	}
-	 */
 	return false
 }
 
 // Filter timeseries and run selected algorithm.
 func RunSelectedAlgorithm(f func([]TimePoint) float64, timeseries []TimePoint) {
 	/*
-	 ensemble := f(timeseries)
-	threshold := len(ensemble) - CONSENSUS
-	if ensemble <= threshold {
-		return true, ensemble, TailAvg(series)
-	}
-	return true, ensemble, timeseries[len(timeseries)-1][1]
-	 */
+		 ensemble := f(timeseries)
+		threshold := len(ensemble) - CONSENSUS
+		if ensemble <= threshold {
+			return true, ensemble, TailAvg(series)
+		}
+		return true, ensemble, timeseries[len(timeseries)-1][1]
+	*/
 }
