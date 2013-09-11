@@ -52,29 +52,17 @@ func MedianAbsoluteDeviation(timeseries []TimePoint) bool {
 
 // A timeseries is anomalous if the Z score is greater than the Grubb's score.
 func Grubbs(timeseries []TimePoint) bool {
-	/*
-		series := ValueArray(timeseries)
-		stdDev := Std(series)
-		mean := Mean(series)
-		tail_average := TailAvg(series)
-		z_score := (tail_average - mean) / stdDev
-		len_series := len(series)
-
-		t := stat.NextStudentsT(float64(len_series - 2))
-	*/
+	series := ValueArray(timeseries)
+	stdDev := Std(series)
+	mean := Mean(series)
+	tail_average := TailAvg(series)
+	z_score := (tail_average - mean) / stdDev
+	len_series := len(series)
 	// scipy.stats.t.isf(len_series -2, 1 - 0.05, len_series -2)
-	// len_series - 2 is studentsT's arg
-	// t.isf(a,b) == t.ppf(1-a,b)
-	// ppf:  Percent point function (inverse of cdf), Quantile function
-	// need StudentsT_InvCDF_For, TINV
-	// stat.StudentsT_InvCDF_For(len_series-2, 1-0.05/(2*len_series), 1)
-	/*
-		threshold := 0.0
-		threshold_squared := threshold * threshold
-		grubbs_score := (float64(len_series - 1) / math.Sqrt(float64(len_series))) * math.Sqrt(threshold_squared/(float64(len_series-2)+threshold_squared))
-		return z_score > grubbs_score
-	*/
-	return true
+	threshold := StudentT_ISF_For(len_series-2, 1-0.05, len_series-2)
+	threshold_squared := threshold * threshold
+	grubbs_score := (float64(len_series-1) / math.Sqrt(float64(len_series))) * math.Sqrt(threshold_squared/(float64(len_series-2)+threshold_squared))
+	return z_score > grubbs_score
 }
 
 // Calcuate the simple average over one hour, FULL_DURATION seconds ago.
@@ -200,7 +188,7 @@ func KsTest(timeseries []TimePoint) bool {
 	ks_d, ks_p_value := KS2Samp(reference, probe)
 	if ks_p_value < 0.05 && ks_d > 0.5 {
 		/*
-			adf := sm.tsa.stattools.adfuller(reference, 10)
+			adf := ADFuller(reference, 10)
 			if adf[1] < 0.05 {
 				return true
 			}
