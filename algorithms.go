@@ -57,8 +57,8 @@ func Grubbs(timeseries []TimePoint) bool {
 	tail_average := TailAvg(series)
 	z_score := (tail_average - mean) / stdDev
 	len_series := len(series)
-	// scipy.stats.t.isf(len_series -2, 1 - 0.05, len_series -2)
-	threshold := StudentT_ISF_For(len_series-2, 1-0.05, len_series-2)
+	// scipy.stats.t.isf(.05 / (2 * len_series) , len_series - 2)
+	threshold := StudentT_ISF_For(0.05 / float64(2 * len_series), len_series-2)
 	threshold_squared := threshold * threshold
 	grubbs_score := (float64(len_series-1) / math.Sqrt(float64(len_series))) * math.Sqrt(threshold_squared/(float64(len_series-2)+threshold_squared))
 	return z_score > grubbs_score
@@ -98,6 +98,7 @@ func SimpleStddevFromMovingAverage(timeseries []TimePoint) bool {
 // deviation of the moving average. This is better for finding anomalies with
 // respect to the short term trends.
 func StddevFromMovingAverage(timeseries []TimePoint) bool {
+	series := ValueArray(timeseries)
 	expAverage := Ewma(series, 50)
 	stdDev := EwmStd(series, 50)
 	return math.Abs(series[len(series)-1]-expAverage[len(expAverage)-1]) > (3 * stdDev[len(stdDev)-1])

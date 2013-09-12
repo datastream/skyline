@@ -1,17 +1,16 @@
 package skyline
 
 /*
-#cgo LDFLAGS: -lprobe
-#include "probes.h"
+ #include "stdtr.c"
+ #cgo LDFLAGS: -O2
 */
 
-import "C"
-
 import (
-	"github.com/VividCortex/ewma"
 	"math"
 	"sort"
 )
+
+import "C"
 
 // series.mean
 func Mean(series []float64) float64 {
@@ -74,7 +73,7 @@ func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
 }
 
 func Ewma(series []float64, com float64) []float64 {
-	return ewma(series, com)
+	return ewma(series, com, true)
 }
 
 // ewma
@@ -145,7 +144,7 @@ func EwmStd(series []float64, com float64) []float64 {
 // numpy.histogram
 func Histogram(series []float64, bins int) ([]int, []float64) {
 	var bin_edges []float64
-	var hist []float64
+	var hist []int
 	l := len(series)
 	if l == 0 {
 		return hist, bin_edges
@@ -263,7 +262,7 @@ func location(array []float64, key float64) int {
 // stdtri, t.isf(q, df) = -stdtri(df, q)
 // http://www.netlib.org/cephes/{cmath.tgz,eval.tgz, cprob.tgz}
 func StudentT_ISF_For(q float64, df int) float64 {
-	return -float64(C.stdtri(df, q))
+	return -float64(C.stdtri(C.int(df), C.double(q)))
 }
 
 /*
