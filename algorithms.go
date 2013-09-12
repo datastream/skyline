@@ -1,7 +1,6 @@
 package skyline
 
 import (
-	"github.com/VividCortex/ewma"
 	"math"
 	"sort"
 	"time"
@@ -99,14 +98,9 @@ func SimpleStddevFromMovingAverage(timeseries []TimePoint) bool {
 // deviation of the moving average. This is better for finding anomalies with
 // respect to the short term trends.
 func StddevFromMovingAverage(timeseries []TimePoint) bool {
-	series := ValueArray(timeseries)
-	e := ewma.NewMovingAverage(50)
-	for _, val := range series {
-		e.Add(val)
-	}
-	expAverage := e.Value()
-	stdDev := ewmstd(series, 50)
-	return math.Abs(series[len(series)-1]-expAverage) > (3 * stdDev)
+	expAverage := Ewma(series, 50)
+	stdDev := EwmStd(series, 50)
+	return math.Abs(series[len(series)-1]-expAverage[len(expAverage)-1]) > (3 * stdDev[len(stdDev)-1])
 }
 
 // A timeseries is anomalous if the value of the next datapoint in the
@@ -114,11 +108,11 @@ func StddevFromMovingAverage(timeseries []TimePoint) bool {
 // after subtracting the mean from each data point.
 func MeanSubtractionCumulation(timeseries []TimePoint) bool {
 	series := ValueArray(timeseries)
-	mean := Mean(series)
+	mean := Mean(series[:len(series)-1])
 	for i, val := range series {
 		series[i] = val - mean
 	}
-	stdDev := Std(series)
+	stdDev := Std(series[:len(series)-1])
 	// expAverage = pandas.stats.moments.ewma(series, com=15)
 	return math.Abs(series[len(series)-1]) > 3*stdDev
 }
@@ -126,7 +120,7 @@ func MeanSubtractionCumulation(timeseries []TimePoint) bool {
 // A timeseries is anomalous if the average of the last three datapoints
 // on a projected least squares model is greater than three sigma.
 func LeastSquares(timeseries []TimePoint) bool {
-	m, c := linearRegressionLSE(timeseries)
+	m, c := LinearRegressionLSE(timeseries)
 	var errs []float64
 	for _, val := range timeseries {
 		projected := m*float64(val.timestamp) + c
@@ -149,7 +143,7 @@ func LeastSquares(timeseries []TimePoint) bool {
 func HistogramBins(timeseries []TimePoint) bool {
 	series := ValueArray(timeseries)
 	t := TailAvg(series)
-	hist, bins := histogram(series, 15)
+	hist, bins := Histogram(series, 15)
 	for i, v := range hist {
 		if v <= 20 {
 			if i == 0 {

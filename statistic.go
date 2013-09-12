@@ -43,17 +43,19 @@ func Median(series []float64) float64 {
 }
 
 // series.std
+// corrected sample standard deviation
+// http://en.wikipedia.org/wiki/Standard_deviation#Estimation
 func Std(series []float64) float64 {
 	mean := Mean(series)
 	sum := 0.0
 	for _, val := range series {
 		sum += math.Pow(val-mean, 2)
 	}
-	return math.Sqrt(sum)
+	return math.Sqrt(sum / float64(len(series)-1))
 }
 
 // least squares linear regression
-func linearRegressionLSE(timeseries []TimePoint) (float64, float64) {
+func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
 	q := len(timeseries)
 	if q == 0 {
 		return 0, 0
@@ -67,27 +69,81 @@ func linearRegressionLSE(timeseries []TimePoint) (float64, float64) {
 		sum_xy += float64(p.timestamp) * p.value
 	}
 	m := (p*sum_xy - sum_x*sum_y) / (p*sum_xx - sum_x*sum_x)
-	c := (sum_y / p) - (m * sum_x / p)
+	c := (sum_y - m*sum_x) / p
 	return m, c
 }
 
+func Ewma(series []float64, com float64) []float64 {
+	return ewma(series, com)
+}
+
+// ewma
+func ewma(series []float64, com float64, adjust bool) []float64 {
+	var cur float64
+	var prev float64
+	var oldw float64
+	var adj float64
+	N := len(series)
+	ret := make([]float64, N)
+	if N == 0 {
+		return ret
+	}
+	oldw = com / (1 + com)
+	adj = oldw
+	if adjust {
+		ret[0] = series[0] / (1 + com)
+	} else {
+		ret[0] = series[0]
+	}
+	for i := 1; i < N; i++ {
+		cur = series[i]
+		prev = ret[i-1]
+		if !math.IsNaN(cur) {
+			if !math.IsNaN(cur) {
+				ret[i] = (com*prev + cur) / (1 + com)
+			} else {
+				ret[i] = cur / (1 + com)
+			}
+		} else {
+			ret[i] = prev
+		}
+	}
+	if adjust {
+		for i := 0; i < N; i++ {
+			cur = ret[i]
+			if !math.IsNaN(cur) {
+				ret[i] = ret[i] / (1. - adj)
+				adj *= oldw
+			} else {
+				if i > 0 {
+					ret[i] = ret[i-1]
+				}
+			}
+		}
+	}
+	return ret
+}
+
 // Exponentially-weighted moving std
-func ewmstd(series []float64, com float64) float64 {
-	m2nd := ewma.NewMovingAverage(com)
-	m1st := ewma.NewMovingAverage(com)
+func EwmStd(series []float64, com float64) []float64 {
+	m1st := Ewma(series, com)
+	var series2 []float64
 	for _, val := range series {
-		m2nd.Add(val * val)
+		series2 = append(series2, val*val)
 	}
-	for _, val := range series {
-		m1st.Add(val)
+	m2nd := Ewma(series2, com)
+	l := len(m1st)
+	var result []float64
+	for i := 0; i < l; i++ {
+		t := m2nd[i] - math.Pow(m1st[i], 2)
+		t *= (1.0 + 2.0*com) / (2.0 * com)
+		result = append(result, math.Sqrt(t))
 	}
-	result := m2nd.Value() - math.Pow(m1st.Value(), 2)
-	result *= (1.0 + 2.0*com) / (2.0 * com)
-	return math.Sqrt(result)
+	return result
 }
 
 // numpy.histogram
-func histogram(series []float64, bins int) ([]float64, []float64) {
+func Histogram(series []float64, bins int) ([]int, []float64) {
 	var bin_edges []float64
 	var hist []float64
 	l := len(series)
@@ -102,14 +158,16 @@ func histogram(series []float64, bins int) ([]float64, []float64) {
 			break
 		}
 	}
+	bin_edges = append(bin_edges, w*float64(bins)+series[0])
 	bl := len(bin_edges)
-	hist = make([]float64, bl-1)
+	hist = make([]int, bl-1)
 	for i := 0; i < bl-1; i++ {
 		for _, val := range series {
 			if val >= bin_edges[i] && val < bin_edges[i+1] {
 				hist[i] += 1
+				continue
 			}
-			if (i+1) == bl && val == bin_edges[i+1] {
+			if i == (bl-2) && val >= bin_edges[i] && val <= bin_edges[i+1] {
 				hist[i] += 1
 			}
 		}
