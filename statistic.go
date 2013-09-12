@@ -58,10 +58,10 @@ func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
 	p := float64(q)
 	sum_x, sum_y, sum_xx, sum_xy := 0.0, 0.0, 0.0, 0.0
 	for _, p := range timeseries {
-		sum_x += float64(p.timestamp)
-		sum_y += p.value
-		sum_xx += float64(p.timestamp * p.timestamp)
-		sum_xy += float64(p.timestamp) * p.value
+		sum_x += float64(p.Timestamp)
+		sum_y += p.Value
+		sum_xx += float64(p.Timestamp * p.Timestamp)
+		sum_xy += float64(p.Timestamp) * p.Value
 	}
 	m := (p*sum_xy - sum_x*sum_y) / (p*sum_xx - sum_x*sum_x)
 	c := (sum_y - m*sum_x) / p

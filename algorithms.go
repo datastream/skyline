@@ -71,8 +71,8 @@ func FirstHourAverage(timeseries []TimePoint) bool {
 	var series []float64
 	last_hour_threshold := time.Now().Unix() - (FULL_DURATION - 3600)
 	for _, val := range timeseries {
-		if val.timestamp < last_hour_threshold {
-			series = append(series, val.value)
+		if val.Timestamp < last_hour_threshold {
+			series = append(series, val.Value)
 		}
 	}
 	mean := Mean(series)
@@ -124,8 +124,8 @@ func LeastSquares(timeseries []TimePoint) bool {
 	m, c := LinearRegressionLSE(timeseries)
 	var errs []float64
 	for _, val := range timeseries {
-		projected := m*float64(val.timestamp) + c
-		errs = append(errs, val.value-projected)
+		projected := m*float64(val.Timestamp) + c
+		errs = append(errs, val.Value-projected)
 	}
 	l := len(errs)
 	if l < 3 {
@@ -170,11 +170,11 @@ func KsTest(timeseries []TimePoint) bool {
 	var reference []float64
 	var probe []float64
 	for _, val := range timeseries {
-		if val.timestamp >= hour_ago && val.timestamp < ten_minutes_ago {
-			reference = append(reference, val.value)
+		if val.Timestamp >= hour_ago && val.Timestamp < ten_minutes_ago {
+			reference = append(reference, val.Value)
 		}
-		if val.timestamp >= ten_minutes_ago {
-			probe = append(probe, val.value)
+		if val.Timestamp >= ten_minutes_ago {
+			probe = append(probe, val.Value)
 		}
 	}
 	if len(reference) < 20 || len(probe) < 20 {
