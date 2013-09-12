@@ -58,7 +58,7 @@ func Grubbs(timeseries []TimePoint) bool {
 	z_score := (tail_average - mean) / stdDev
 	len_series := len(series)
 	// scipy.stats.t.isf(.05 / (2 * len_series) , len_series - 2)
-	threshold := StudentT_ISF_For(0.05 / float64(2 * len_series), len_series-2)
+	threshold := StudentT_ISF_For(0.05/float64(2*len_series), len_series-2)
 	threshold_squared := threshold * threshold
 	grubbs_score := (float64(len_series-1) / math.Sqrt(float64(len_series))) * math.Sqrt(threshold_squared/(float64(len_series-2)+threshold_squared))
 	return z_score > grubbs_score

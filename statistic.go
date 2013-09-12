@@ -1,16 +1,12 @@
 package skyline
 
-/*
- #include "stdtr.c"
- #cgo LDFLAGS: -O2
-*/
+// double stdtri ( int k, double p );
+import "C"
 
 import (
 	"math"
 	"sort"
 )
-
-import "C"
 
 // series.mean
 func Mean(series []float64) float64 {
