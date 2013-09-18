@@ -2,7 +2,6 @@ package skyline
 
 import (
 	"math"
-	"sort"
 	"time"
 )
 
@@ -31,13 +30,11 @@ func TailAvg(series []float64) float64 {
 // respect to the median is X times larger than the median of deviations.
 func MedianAbsoluteDeviation(timeseries []TimePoint) bool {
 	series := ValueArray(timeseries)
-	sort.Float64s(series)
 	median := Median(series)
 	var demedianed []float64
 	for _, val := range series {
 		demedianed = append(demedianed, math.Abs(val-median))
 	}
-	sort.Float64s(demedianed)
 	median_deviation := Median(demedianed)
 	if median_deviation == 0 {
 		return false
@@ -195,11 +192,11 @@ func KsTest(timeseries []TimePoint) bool {
 // Filter timeseries and run selected algorithm.
 func RunSelectedAlgorithm(f func([]TimePoint) float64, timeseries []TimePoint) {
 	/*
-		 ensemble := f(timeseries)
-		threshold := len(ensemble) - CONSENSUS
-		if ensemble <= threshold {
-			return true, ensemble, TailAvg(series)
-		}
-		return true, ensemble, timeseries[len(timeseries)-1][1]
+	 ensemble := f(timeseries)
+	 threshold := len(ensemble) - CONSENSUS
+	 if ensemble <= threshold {
+	 return true, ensemble, TailAvg(series)
+	 }
+	 return true, ensemble, timeseries[len(timeseries)-1][1]
 	*/
 }
