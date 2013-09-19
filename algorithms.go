@@ -64,7 +64,7 @@ func Grubbs(timeseries []TimePoint) bool {
 // Calcuate the simple average over one hour, FULL_DURATION seconds ago.
 // A timeseries is anomalous if the average of the last three datapoints
 // are outside of three standard deviations of this value.
-func FirstHourAverage(timeseries []TimePoint) bool {
+func FirstHourAverage(timeseries []TimePoint, FULL_DURATION int64) bool {
 	var series []float64
 	last_hour_threshold := time.Now().Unix() - (FULL_DURATION - 3600)
 	for _, val := range timeseries {

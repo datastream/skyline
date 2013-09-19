@@ -30,7 +30,3 @@ func TimeValueArray(timeseries []TimePoint) ([]int64, []float64) {
 	}
 	return t, v
 }
-
-const (
-	FULL_DURATION = 1
-)
