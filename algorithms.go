@@ -64,9 +64,9 @@ func Grubbs(timeseries []TimePoint) bool {
 // Calcuate the simple average over one hour, FULL_DURATION seconds ago.
 // A timeseries is anomalous if the average of the last three datapoints
 // are outside of three standard deviations of this value.
-func FirstHourAverage(timeseries []TimePoint, FULL_DURATION int64) bool {
+func FirstHourAverage(timeseries []TimePoint, Full_duration int64) bool {
 	var series []float64
-	last_hour_threshold := time.Now().Unix() - (FULL_DURATION - 3600)
+	last_hour_threshold := time.Now().Unix() - (full_duration - 3600)
 	for _, val := range timeseries {
 		if val.Timestamp < last_hour_threshold {
 			series = append(series, val.Value)
@@ -190,13 +190,19 @@ func KsTest(timeseries []TimePoint) bool {
 }
 
 // Filter timeseries and run selected algorithm.
+/*
 func RunSelectedAlgorithm(f func([]TimePoint) float64, timeseries []TimePoint) {
-	/*
 	 ensemble := f(timeseries)
 	 threshold := len(ensemble) - CONSENSUS
-	 if ensemble <= threshold {
-	 return true, ensemble, TailAvg(series)
+	var ensemble_false_count int
+	for _,v := range ensemble {
+		if !v {
+			ensemble_false_count ++
+		}
+	}
+	if ensemble_false_count <= threshold {
+		return true, ensemble, timeseries[:len(timeseries)-1].Value
 	 }
-	 return true, ensemble, timeseries[len(timeseries)-1][1]
-	*/
+	return false, ensemble, timeseries[:len(timeseries)-1].Value
 }
+*/

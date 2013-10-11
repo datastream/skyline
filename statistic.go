@@ -8,16 +8,33 @@ import (
 	"sort"
 )
 
-// series.mean
-func Mean(series []float64) float64 {
-	if len(series) == 0 {
-		return 0
+func unDef(f float64) bool {
+	if math.IsNaN(f)     { return true }
+	if math.IsInf(f, 1)  { return true }
+	if math.IsInf(f, -1) { return true }
+	return false
+}
+
+//  Mean Average
+//  mean = SIGMA a / len(a)
+//  SIGMA a total of all of the elements of a
+//  len(a) = length of a (aka the number of values)
+func Mean(a []float64) float64 {
+	lena := float64(len(a))
+	if lena == 0 {
+		return math.NaN()
 	}
-	sum := 0.0
-	for _, val := range series {
-		sum += val
+	var sum float64
+	for _, v := range a {
+		if unDef(v) {
+			return math.NaN()
+		}
+		sum += v
 	}
-	return sum / float64(len(series))
+	if unDef(sum) {
+		return math.NaN()
+	}
+	return sum / lena
 }
 
 // series.median
@@ -37,16 +54,36 @@ func Median(series []float64) float64 {
 	return median
 }
 
-// series.std
-// corrected sample standard deviation
-// http://en.wikipedia.org/wiki/Standard_deviation#Estimation
-func Std(series []float64) float64 {
-	mean := Mean(series)
-	sum := 0.0
-	for _, val := range series {
-		sum += math.Pow(val-mean, 2)
+//  Standard Deviation of a sample
+//  sd = sqrt(SIGMA ((a[i] - mean) ^ 2) / (len(a)-1))
+//  SIGMA a total of all of the elements of a
+//  a[i] is the ith elemant of a
+//  len(a) = the number of elements in the slice a adjusted for sample
+func Std(a []float64) float64 {
+	lena := float64(len(a))
+	if lena == 0 {
+		return math.NaN()
 	}
-	return math.Sqrt(sum / float64(len(series)-1))
+	if lena == 1 {
+		return math.NaN()
+	}
+	m := Mean(a)
+	if unDef(m) {
+		return math.NaN()
+	}
+	var sum float64
+	for _, v := range a {
+		pow := math.Pow(v-m, 2)
+		if unDef(pow) {
+			return math.NaN()
+		}
+		sum += pow
+	}
+	sqrt := math.Sqrt(sum / (lena - 1))
+	if unDef(sqrt) {
+		return math.NaN()
+	}
+	return sqrt
 }
 
 // least squares linear regression
@@ -93,14 +130,14 @@ func ewma(series []float64, com float64, adjust bool) []float64 {
 	for i := 1; i < N; i++ {
 		cur = series[i]
 		prev = ret[i-1]
-		if !math.IsNaN(cur) {
-			if !math.IsNaN(cur) {
-				ret[i] = (com*prev + cur) / (1 + com)
-			} else {
-				ret[i] = cur / (1 + com)
-			}
-		} else {
+		if unDef(cur) {
 			ret[i] = prev
+		} else {
+			if unDef(prev) {
+				ret[i] = cur / (1 + com)
+			} else {
+				ret[i] = (com*prev + cur) / (1 + com)
+			}
 		}
 	}
 	if adjust {
@@ -171,7 +208,6 @@ func Histogram(series []float64, bins int) ([]int, []float64) {
 }
 
 //scipy.ks_2samp
-
 func KS2Samp(data1, data2 []float64) (float64, float64) {
 	sort.Float64s(data1)
 	sort.Float64s(data2)
