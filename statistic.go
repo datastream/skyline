@@ -9,9 +9,15 @@ import (
 )
 
 func unDef(f float64) bool {
-	if math.IsNaN(f)     { return true }
-	if math.IsInf(f, 1)  { return true }
-	if math.IsInf(f, -1) { return true }
+	if math.IsNaN(f) {
+		return true
+	}
+	if math.IsInf(f, 1) {
+		return true
+	}
+	if math.IsInf(f, -1) {
+		return true
+	}
 	return false
 }
 
@@ -40,6 +46,7 @@ func Mean(a []float64) float64 {
 // series.median
 func Median(series []float64) float64 {
 	var median float64
+	sort.Float64s(series)
 	Len := len(series)
 	lhs := (Len - 1) / 2
 	rhs := Len / 2
