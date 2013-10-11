@@ -74,7 +74,7 @@ func FirstHourAverage(timeseries []TimePoint, full_duration int64) bool {
 	}
 	mean := Mean(series)
 	stdDev := Std(series)
-	t := TailAvg(series)
+	t := TailAvg(ValueArray(timeseries))
 	return math.Abs(t-mean) > 3*stdDev
 }
 
