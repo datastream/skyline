@@ -21,10 +21,10 @@ func unDef(f float64) bool {
 	return false
 }
 
-//  Mean Average
-//  mean = SIGMA a / len(a)
-//  SIGMA a total of all of the elements of a
-//  len(a) = length of a (aka the number of values)
+// Mean Average
+// mean = SIGMA a / len(a)
+// SIGMA a total of all of the elements of a
+// len(a) = length of a (aka the number of values)
 func Mean(a []float64) float64 {
 	lena := float64(len(a))
 	if lena == 0 {
@@ -43,7 +43,7 @@ func Mean(a []float64) float64 {
 	return sum / lena
 }
 
-// series.median
+// Median series.median
 func Median(series []float64) float64 {
 	var median float64
 	sort.Float64s(series)
@@ -61,11 +61,11 @@ func Median(series []float64) float64 {
 	return median
 }
 
-//  Standard Deviation of a sample
-//  sd = sqrt(SIGMA ((a[i] - mean) ^ 2) / (len(a)-1))
-//  SIGMA a total of all of the elements of a
-//  a[i] is the ith elemant of a
-//  len(a) = the number of elements in the slice a adjusted for sample
+// Std Standard Deviation of a sample
+// sd = sqrt(SIGMA ((a[i] - mean) ^ 2) / (len(a)-1))
+// SIGMA a total of all of the elements of a
+// a[i] is the ith elemant of a
+// len(a) = the number of elements in the slice a adjusted for sample
 func Std(a []float64) float64 {
 	lena := float64(len(a))
 	if lena == 0 {
@@ -93,30 +93,30 @@ func Std(a []float64) float64 {
 	return sqrt
 }
 
-// least squares linear regression
+// LinearRegressionLSE least squares linear regression
 func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
 	q := len(timeseries)
 	if q == 0 {
 		return 0, 0
 	}
 	p := float64(q)
-	sum_x, sum_y, sum_xx, sum_xy := 0.0, 0.0, 0.0, 0.0
+	sumX, sumY, sumXX, sumXY := 0.0, 0.0, 0.0, 0.0
 	for _, p := range timeseries {
-		sum_x += float64(p.Timestamp)
-		sum_y += p.Value
-		sum_xx += float64(p.Timestamp * p.Timestamp)
-		sum_xy += float64(p.Timestamp) * p.Value
+		sumX += float64(p.Timestamp)
+		sumY += p.Value
+		sumXX += float64(p.Timestamp * p.Timestamp)
+		sumXY += float64(p.Timestamp) * p.Value
 	}
-	m := (p*sum_xy - sum_x*sum_y) / (p*sum_xx - sum_x*sum_x)
-	c := (sum_y - m*sum_x) / p
+	m := (p*sumXY - sumX*sumY) / (p*sumXX - sumX*sumX)
+	c := (sumY - m*sumX) / p
 	return m, c
 }
 
+// Ewma hook
 func Ewma(series []float64, com float64) []float64 {
 	return ewma(series, com, true)
 }
 
-// ewma
 func ewma(series []float64, com float64, adjust bool) []float64 {
 	var cur float64
 	var prev float64
@@ -163,7 +163,7 @@ func ewma(series []float64, com float64, adjust bool) []float64 {
 	return ret
 }
 
-// Exponentially-weighted moving std
+// EwmStd Exponentially-weighted moving std
 func EwmStd(series []float64, com float64) []float64 {
 	m1st := Ewma(series, com)
 	var series2 []float64
@@ -181,50 +181,50 @@ func EwmStd(series []float64, com float64) []float64 {
 	return result
 }
 
-// numpy.histogram
+// Histogram numpy.histogram
 func Histogram(series []float64, bins int) ([]int, []float64) {
-	var bin_edges []float64
+	var binEdges []float64
 	var hist []int
 	l := len(series)
 	if l == 0 {
-		return hist, bin_edges
+		return hist, binEdges
 	}
 	sort.Float64s(series)
 	w := (series[l-1] - series[0]) / float64(bins)
 	for i := 0; i < bins; i++ {
-		bin_edges = append(bin_edges, w*float64(i)+series[0])
-		if bin_edges[len(bin_edges)-1] >= series[l-1] {
+		binEdges = append(binEdges, w*float64(i)+series[0])
+		if binEdges[len(binEdges)-1] >= series[l-1] {
 			break
 		}
 	}
-	bin_edges = append(bin_edges, w*float64(bins)+series[0])
-	bl := len(bin_edges)
+	binEdges = append(binEdges, w*float64(bins)+series[0])
+	bl := len(binEdges)
 	hist = make([]int, bl-1)
 	for i := 0; i < bl-1; i++ {
 		for _, val := range series {
-			if val >= bin_edges[i] && val < bin_edges[i+1] {
+			if val >= binEdges[i] && val < binEdges[i+1] {
 				hist[i] += 1
 				continue
 			}
-			if i == (bl-2) && val >= bin_edges[i] && val <= bin_edges[i+1] {
+			if i == (bl-2) && val >= binEdges[i] && val <= binEdges[i+1] {
 				hist[i] += 1
 			}
 		}
 	}
-	return hist, bin_edges
+	return hist, binEdges
 }
 
-//scipy.ks_2samp
+// KS2Samp scipy.ks_2samp
 func KS2Samp(data1, data2 []float64) (float64, float64) {
 	sort.Float64s(data1)
 	sort.Float64s(data2)
 	n1 := len(data1)
 	n2 := len(data2)
-	var data_all []float64
-	data_all = append(data_all, data1...)
-	data_all = append(data_all, data2...)
-	index1 := searchsorted(data1, data_all)
-	index2 := searchsorted(data2, data_all)
+	var dataAll []float64
+	dataAll = append(dataAll, data1...)
+	dataAll = append(dataAll, data2...)
+	index1 := searchsorted(data1, dataAll)
+	index2 := searchsorted(data2, dataAll)
 	var cdf1 []float64
 	var cdf2 []float64
 	for _, v := range index1 {
@@ -298,9 +298,10 @@ func location(array []float64, key float64) int {
 	return i
 }
 
+// StudentTISFFor isf for student-T
 // stdtri, t.isf(q, df) = -stdtri(df, q)
 // http://www.netlib.org/cephes/{cmath.tgz,eval.tgz, cprob.tgz}
-func StudentT_ISF_For(q float64, df int) float64 {
+func StudentTISFFor(q float64, df int) float64 {
 	return -float64(C.stdtri(C.int(df), C.double(q)))
 }
 

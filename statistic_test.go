@@ -82,14 +82,14 @@ func testHistogram(t *testing.T) {
 func testKS2Samp(t *testing.T) {
 	reference := []float64{0.1, 1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9, 9.01, 1.2, 2, 4, 6, 9, 1, 22, 11, 19, 18.9, 11, 14}
 	probe := []float64{0.4, 0.1, 1.3, 2.4, 6.5, 3.6, 5.7, 6.8, 8.9, 9, 9.1, 11.2, 1.2, 1.3, 14, 4, 5, 0.123, 9, 7, 8.1, 9.9, 2.1}
-	ks_d, ks_p_value := skyline.KS2Samp(reference, probe)
-	if ks_d != 0.18577075098814222 || ks_p_value != 0.789955481957006 {
+	ksD, ksPValue := skyline.KS2Samp(reference, probe)
+	if ksD != 0.18577075098814222 || ksPValue != 0.789955481957006 {
 		t.Fatal("ewma error", t)
 	}
 }
 
-func testStudentT_ISF_For(t *testing.T) {
-	rs := skyline.StudentT_ISF_For(0.05, 2)
+func testStudentTISFFor(t *testing.T) {
+	rs := skyline.StudentTISFFor(0.05, 2)
 	if rs != 2.919986 {
 		t.Fatal("studentt_isf_for error", t)
 	}
