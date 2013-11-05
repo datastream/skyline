@@ -1,8 +1,5 @@
 package skyline
 
-// double stdtri ( int k, double p );
-import "C"
-
 import (
 	"math"
 	"sort"
@@ -296,13 +293,6 @@ func location(array []float64, key float64) int {
 		}
 	}
 	return i
-}
-
-// StudentTISFFor isf for student-T
-// stdtri, t.isf(q, df) = -stdtri(df, q)
-// http://www.netlib.org/cephes/{cmath.tgz,eval.tgz, cprob.tgz}
-func StudentTISFFor(q float64, df int) float64 {
-	return -float64(C.stdtri(C.int(df), C.double(q)))
 }
 
 /*

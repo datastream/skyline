@@ -87,10 +87,3 @@ func testKS2Samp(t *testing.T) {
 		t.Fatal("ewma error", t)
 	}
 }
-
-func testStudentTISFFor(t *testing.T) {
-	rs := skyline.StudentTISFFor(0.05, 2)
-	if rs != 2.919986 {
-		t.Fatal("studentt_isf_for error", t)
-	}
-}

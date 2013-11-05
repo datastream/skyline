@@ -1,6 +1,7 @@
 package skyline
 
 import (
+	"code.google.com/p/probab/dst"
 	"math"
 	"time"
 )
@@ -54,11 +55,15 @@ func Grubbs(timeseries []TimePoint) bool {
 	stdDev := Std(series)
 	mean := Mean(series)
 	tailAverage := TailAvg(series)
+	// http://en.wikipedia.org/wiki/Grubbs'_test_for_outliers
+	// G = (Y - Mean(Y)) / stdDev(Y)
 	zScore := (tailAverage - mean) / stdDev
 	lenSeries := len(series)
 	// scipy.stats.t.isf(.05 / (2 * lenSeries) , lenSeries - 2)
-	threshold := StudentTISFFor(0.05/float64(2*lenSeries), lenSeries-2)
+	// when lenSeries is big, it eq stats.ZInvCDFFor(1-t)
+	threshold := dst.StudentsTQtlFor(float64(lenSeries-2), 1-0.05/float64(2*lenSeries))
 	thresholdSquared := threshold * threshold
+	// (l-1)/l * sqr(t/(l-2+t^2))
 	grubbsScore := (float64(lenSeries-1) / math.Sqrt(float64(lenSeries))) * math.Sqrt(thresholdSquared/(float64(lenSeries-2)+thresholdSquared))
 	return zScore > grubbsScore
 }
