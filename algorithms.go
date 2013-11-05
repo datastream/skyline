@@ -202,21 +202,3 @@ func KsTest(timeseries []TimePoint) bool {
 	}
 	return false
 }
-
-// Filter timeseries and run selected algorithm.
-/*
-func RunSelectedAlgorithm(f func([]TimePoint) float64, timeseries []TimePoint) {
-	 ensemble := f(timeseries)
-	 threshold := len(ensemble) - CONSENSUS
-	var ensemble_false_count int
-	for _,v := range ensemble {
-		if !v {
-			ensemble_false_count ++
-		}
-	}
-	if ensemble_false_count <= threshold {
-		return true, ensemble, timeseries[:len(timeseries)-1].Value
-	 }
-	return false, ensemble, timeseries[:len(timeseries)-1].Value
-}
-*/
