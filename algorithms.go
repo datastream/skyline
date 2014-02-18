@@ -202,3 +202,27 @@ func KsTest(timeseries []TimePoint) bool {
 	}
 	return false
 }
+
+// IsAnomalouslyAnomalous function
+// This method runs a meta-analysis on the metric to determine whether the
+// metric has a past history of triggering. TODO: weight intervals based on datapoint
+func IsAnomalouslyAnomalous(trigger_history []TimePoint, new_trigger TimePoint) (bool, []TimePoint) {
+	if len(trigger_history) == 0 {
+		trigger_history = append(trigger_history, new_trigger)
+		return true, trigger_history
+	}
+	if (new_trigger.Value == trigger_history[len(trigger_history)-1].Value) && (new_trigger.Timestamp-trigger_history[len(trigger_history)-1].Timestamp <= 300) {
+		return false, trigger_history
+	}
+	trigger_history = append(trigger_history, new_trigger)
+	trigger_times := TimeArray(trigger_history)
+	var intervals []float64
+	for i := range trigger_times {
+		if (i + 1) < len(trigger_times) {
+			intervals = append(intervals, float64(trigger_times[i+1]-trigger_times[i]))
+		}
+	}
+	mean := Mean(intervals)
+	stdDev := Std(intervals)
+	return math.Abs(intervals[len(intervals)-1]-mean) > 3*stdDev, trigger_history
+}
