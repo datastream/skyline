@@ -76,8 +76,8 @@ func FirstHourAverage(timeseries []TimePoint, fullDuration int64) bool {
 	var series []float64
 	lastHourThreshold := time.Now().Unix() - (fullDuration - 3600)
 	for _, val := range timeseries {
-		if val.Timestamp < lastHourThreshold {
-			series = append(series, val.Value)
+		if val.GetTimestamp() < lastHourThreshold {
+			series = append(series, val.GetValue())
 		}
 	}
 	mean := Mean(series)
@@ -133,8 +133,8 @@ func LeastSquares(timeseries []TimePoint) bool {
 	m, c := LinearRegressionLSE(timeseries)
 	var errs []float64
 	for _, val := range timeseries {
-		projected := m*float64(val.Timestamp) + c
-		errs = append(errs, val.Value-projected)
+		projected := m*float64(val.GetTimestamp()) + c
+		errs = append(errs, val.GetValue()-projected)
 	}
 	l := len(errs)
 	if l < 3 {
@@ -181,11 +181,11 @@ func KsTest(timeseries []TimePoint) bool {
 	var reference []float64
 	var probe []float64
 	for _, val := range timeseries {
-		if val.Timestamp >= hourAgo && val.Timestamp < tenMinutesAgo {
-			reference = append(reference, val.Value)
+		if val.GetTimestamp() >= hourAgo && val.GetTimestamp() < tenMinutesAgo {
+			reference = append(reference, val.GetValue())
 		}
-		if val.Timestamp >= tenMinutesAgo {
-			probe = append(probe, val.Value)
+		if val.GetTimestamp() >= tenMinutesAgo {
+			probe = append(probe, val.GetValue())
 		}
 	}
 	if len(reference) < 20 || len(probe) < 20 {
@@ -211,7 +211,7 @@ func IsAnomalouslyAnomalous(trigger_history []TimePoint, new_trigger TimePoint) 
 		trigger_history = append(trigger_history, new_trigger)
 		return true, trigger_history
 	}
-	if (new_trigger.Value == trigger_history[len(trigger_history)-1].Value) && (new_trigger.Timestamp-trigger_history[len(trigger_history)-1].Timestamp <= 300) {
+	if (new_trigger.GetValue() == trigger_history[len(trigger_history)-1].GetValue()) && (new_trigger.GetTimestamp()-trigger_history[len(trigger_history)-1].GetTimestamp() <= 300) {
 		return false, trigger_history
 	}
 	trigger_history = append(trigger_history, new_trigger)

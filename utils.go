@@ -1,16 +1,16 @@
 package skyline
 
 // TimePoint is basic data struct
-type TimePoint struct {
-	Timestamp int64   //x time
-	Value     float64 //y value
+type TimePoint interface {
+	GetTimestamp() int64 //x time
+	GetValue() float64   //y value
 }
 
 // TimeArray return all timestamps in timeseries array
 func TimeArray(timeseries []TimePoint) []int64 {
 	var t []int64
 	for _, val := range timeseries {
-		t = append(t, val.Timestamp)
+		t = append(t, val.GetTimestamp())
 	}
 	return t
 }
@@ -19,7 +19,7 @@ func TimeArray(timeseries []TimePoint) []int64 {
 func ValueArray(timeseries []TimePoint) []float64 {
 	var v []float64
 	for _, val := range timeseries {
-		v = append(v, val.Value)
+		v = append(v, val.GetValue())
 	}
 	return v
 }
@@ -29,8 +29,8 @@ func TimeValueArray(timeseries []TimePoint) ([]int64, []float64) {
 	var v []float64
 	var t []int64
 	for _, val := range timeseries {
-		t = append(t, val.Timestamp)
-		v = append(v, val.Value)
+		t = append(t, val.GetTimestamp())
+		v = append(v, val.GetValue())
 	}
 	return t, v
 }

@@ -26,10 +26,21 @@ func TestStd(t *testing.T) {
 	}
 }
 
+type TP struct {
+	Timestamp int64
+	Value     float64
+}
+
+func (f *TP) GetValue() float64 {
+	return f.Value
+}
+func (f *TP) GetTimestamp() int64 {
+	return f.Timestamp
+}
 func testLinearRegressionLSE(t *testing.T) {
 	var timeseries []skyline.TimePoint
 	for i := 0; i < 10; i++ {
-		t := skyline.TimePoint{
+		t := &TP{
 			Timestamp: int64(i),
 			Value:     float64(i)*3.1 - 2.1,
 		}
