@@ -1,6 +1,7 @@
 package skyline
 
 import (
+	"github.com/eclesh/welford"
 	"math"
 	"sort"
 )
@@ -23,21 +24,11 @@ func unDef(f float64) bool {
 // SIGMA a total of all of the elements of a
 // len(a) = length of a (aka the number of values)
 func Mean(a []float64) float64 {
-	lena := float64(len(a))
-	if lena == 0 {
-		return math.NaN()
-	}
-	var sum float64
+	s := welford.New()
 	for _, v := range a {
-		if unDef(v) {
-			return math.NaN()
-		}
-		sum += v
+		s.Add(v)
 	}
-	if unDef(sum) {
-		return math.NaN()
-	}
-	return sum / lena
+	return s.Mean()
 }
 
 // Median series.median
@@ -64,30 +55,11 @@ func Median(series []float64) float64 {
 // a[i] is the ith elemant of a
 // len(a) = the number of elements in the slice a adjusted for sample
 func Std(a []float64) float64 {
-	lena := float64(len(a))
-	if lena == 0 {
-		return math.NaN()
-	}
-	if lena == 1 {
-		return math.NaN()
-	}
-	m := Mean(a)
-	if unDef(m) {
-		return math.NaN()
-	}
-	var sum float64
+	s := welford.New()
 	for _, v := range a {
-		pow := math.Pow(v-m, 2)
-		if unDef(pow) {
-			return math.NaN()
-		}
-		sum += pow
+		s.Add(v)
 	}
-	sqrt := math.Sqrt(sum / (lena - 1))
-	if unDef(sqrt) {
-		return math.NaN()
-	}
-	return sqrt
+	return s.Stddev()
 }
 
 // LinearRegressionLSE least squares linear regression

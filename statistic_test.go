@@ -5,24 +5,10 @@ import (
 	"testing"
 )
 
-func TestMean(t *testing.T) {
-	series := []float64{0.1, 1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9, 9.01}
-	if skyline.Mean(series) != 4.951 {
-		t.Fatal("wrong mean", t)
-	}
-}
-
 func TestMedian(t *testing.T) {
 	series := []float64{0.1, 1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9, 9.01}
 	if skyline.Median(series) != 5.05 {
-		t.Fatal("wrong median", t)
-	}
-}
-
-func TestStd(t *testing.T) {
-	series := []float64{0.1, 1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9, 9.01}
-	if skyline.Std(series) != 3.1781561740522863 {
-		t.Fatal("wrong median", t)
+		t.Fatal("wrong median", skyline.Median(series))
 	}
 }
 

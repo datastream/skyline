@@ -23,14 +23,3 @@ func ValueArray(timeseries []TimePoint) []float64 {
 	}
 	return v
 }
-
-// TimeValueArray return all timestamps & values in timeseries array
-func TimeValueArray(timeseries []TimePoint) ([]int64, []float64) {
-	var v []float64
-	var t []int64
-	for _, val := range timeseries {
-		t = append(t, val.GetTimestamp())
-		v = append(v, val.GetValue())
-	}
-	return t, v
-}
