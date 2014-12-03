@@ -1,7 +1,7 @@
 package skyline
 
 import (
-	"github.com/eclesh/welford"
+	"github.com/dgryski/go-onlinestats"
 	"math"
 	"sort"
 )
@@ -24,9 +24,9 @@ func unDef(f float64) bool {
 // SIGMA a total of all of the elements of a
 // len(a) = length of a (aka the number of values)
 func Mean(a []float64) float64 {
-	s := welford.New()
+	s := onlinestats.NewRunning()
 	for _, v := range a {
-		s.Add(v)
+		s.Push(v)
 	}
 	return s.Mean()
 }
@@ -55,30 +55,20 @@ func Median(series []float64) float64 {
 // a[i] is the ith elemant of a
 // len(a) = the number of elements in the slice a adjusted for sample
 func Std(a []float64) float64 {
-	s := welford.New()
+	s := onlinestats.NewRunning()
 	for _, v := range a {
-		s.Add(v)
+		s.Push(v)
 	}
 	return s.Stddev()
 }
 
 // LinearRegressionLSE least squares linear regression
 func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
-	q := len(timeseries)
-	if q == 0 {
-		return 0, 0
-	}
-	p := float64(q)
-	sumX, sumY, sumXX, sumXY := 0.0, 0.0, 0.0, 0.0
+	regression := onlinestats.NewRegression()
 	for _, p := range timeseries {
-		sumX += float64(p.GetTimestamp())
-		sumY += p.GetValue()
-		sumXX += float64(p.GetTimestamp() * p.GetTimestamp())
-		sumXY += float64(p.GetTimestamp()) * p.GetValue()
+		regression.Push(float64(p.GetTimestamp()), p.GetValue())
 	}
-	m := (p*sumXY - sumX*sumY) / (p*sumXX - sumX*sumX)
-	c := (sumY - m*sumX) / p
-	return m, c
+	return regression.Slope(), regression.Intercept()
 }
 
 // Ewma hook
@@ -183,7 +173,7 @@ func Histogram(series []float64, bins int) ([]int, []float64) {
 	return hist, binEdges
 }
 
-// KS2Samp scipy.ks_2samp
+// KS2Samp
 func KS2Samp(data1, data2 []float64) (float64, float64) {
 	sort.Float64s(data1)
 	sort.Float64s(data2)
@@ -206,39 +196,7 @@ func KS2Samp(data1, data2 []float64) (float64, float64) {
 	for i := 0; i < len(cdf1); i++ {
 		d = math.Max(d, math.Abs(cdf1[i]-cdf2[i]))
 	}
-	en := math.Sqrt(float64(n1*n2) / float64(n1+n2))
-	prob := kolmogorov((en + 0.12 + 0.11/en) * d)
-	return d, prob
-}
-
-// Kolmogorov's limiting distribution of two-sided test, returns
-// probability that sqrt(n) * max deviation > y,
-// or that max deviation > y/sqrt(n).
-// The approximation is useful for the tail of the distribution
-// when n is large.
-// scipy/special/cephes/kolmogorov.c
-func kolmogorov(y float64) float64 {
-	if y < 1.1e-16 {
-		return 1.0
-	}
-	x := -2.0 * y * y
-	sign := 1.0
-	p := 0.0
-	r := 1.0
-	var t float64
-	for {
-		t = math.Exp(x * r * r)
-		p += sign * t
-		if t == 0.0 {
-			break
-		}
-		r += 1.0
-		sign = -sign
-		if (t / p) <= 1.1e-16 {
-			break
-		}
-	}
-	return (p + p)
+	return d, onlinestats.KS(data1, data2)
 }
 
 //np.searchsorted
