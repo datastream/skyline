@@ -71,12 +71,8 @@ func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
 	return regression.Slope(), regression.Intercept()
 }
 
-// Ewma hook
+// Ewma
 func Ewma(series []float64, com float64) []float64 {
-	return ewma(series, com, true)
-}
-
-func ewma(series []float64, com float64, adjust bool) []float64 {
 	var cur float64
 	var prev float64
 	var oldw float64
@@ -88,11 +84,7 @@ func ewma(series []float64, com float64, adjust bool) []float64 {
 	}
 	oldw = com / (1 + com)
 	adj = oldw
-	if adjust {
-		ret[0] = series[0] / (1 + com)
-	} else {
-		ret[0] = series[0]
-	}
+	ret[0] = series[0] / (1 + com)
 	for i := 1; i < N; i++ {
 		cur = series[i]
 		prev = ret[i-1]
@@ -106,16 +98,14 @@ func ewma(series []float64, com float64, adjust bool) []float64 {
 			}
 		}
 	}
-	if adjust {
-		for i := 0; i < N; i++ {
-			cur = ret[i]
-			if !math.IsNaN(cur) {
-				ret[i] = ret[i] / (1. - adj)
-				adj *= oldw
-			} else {
-				if i > 0 {
-					ret[i] = ret[i-1]
-				}
+	for i := 0; i < N; i++ {
+		cur = ret[i]
+		if !math.IsNaN(cur) {
+			ret[i] = ret[i] / (1. - adj)
+			adj *= oldw
+		} else {
+			if i > 0 {
+				ret[i] = ret[i-1]
 			}
 		}
 	}
