@@ -191,7 +191,7 @@ func KsTest(timeseries []TimePoint) bool {
 	if len(reference) < 20 || len(probe) < 20 {
 		return false
 	}
-	ksD, ksPValue := KS2Samp(reference, probe)
+	_, ksPValue, ksD := KolmogorovSmirnov(reference, probe, 0.05)
 	if ksPValue < 0.05 && ksD > 0.5 {
 		/*
 			adf := ADFuller(reference, 10)
