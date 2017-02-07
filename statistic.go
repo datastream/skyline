@@ -1,8 +1,7 @@
 package skyline
 
 import (
-	"github.com/dgryski/go-onlinestats"
-	"github.com/ready-steady/statistics/metric"
+	"github.com/gonum/stat"
 	"math"
 	"sort"
 )
@@ -18,18 +17,6 @@ func unDef(f float64) bool {
 		return true
 	}
 	return false
-}
-
-// Mean Average
-// mean = SIGMA a / len(a)
-// SIGMA a total of all of the elements of a
-// len(a) = length of a (aka the number of values)
-func Mean(a []float64) float64 {
-	s := onlinestats.NewRunning()
-	for _, v := range a {
-		s.Push(v)
-	}
-	return s.Mean()
 }
 
 // Median series.median
@@ -48,28 +35,6 @@ func Median(series []float64) float64 {
 		median = (series[lhs] + series[rhs]) / 2.0
 	}
 	return median
-}
-
-// Std Standard Deviation of a sample
-// sd = sqrt(SIGMA ((a[i] - mean) ^ 2) / (len(a)-1))
-// SIGMA a total of all of the elements of a
-// a[i] is the ith elemant of a
-// len(a) = the number of elements in the slice a adjusted for sample
-func Std(a []float64) float64 {
-	s := onlinestats.NewRunning()
-	for _, v := range a {
-		s.Push(v)
-	}
-	return s.Stddev()
-}
-
-// LinearRegressionLSE least squares linear regression
-func LinearRegressionLSE(timeseries []TimePoint) (float64, float64) {
-	regression := onlinestats.NewRegression()
-	for _, p := range timeseries {
-		regression.Push(float64(p.GetTimestamp()), p.GetValue())
-	}
-	return regression.Slope(), regression.Intercept()
 }
 
 // Ewma
@@ -177,7 +142,7 @@ func KolmogorovSmirnov(data1, data2 []float64, α float64) (bool, float64, float
 		terms = 101
 	)
 
-	statistic := metric.KolmogorovSmirnov(data1, data2)
+	statistic := stat.KolmogorovSmirnov(data1, nil, data2, nil)
 
 	// M. Stephens. Use of the Kolmogorov–Smirnov, Cramer-Von Mises and Related
 	// Statistics Without Extensive Tables. Journal of the Royal Statistical

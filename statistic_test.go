@@ -23,20 +23,6 @@ func (f *TP) GetValue() float64 {
 func (f *TP) GetTimestamp() int64 {
 	return f.Timestamp
 }
-func testLinearRegressionLSE(t *testing.T) {
-	var timeseries []skyline.TimePoint
-	for i := 0; i < 10; i++ {
-		t := &TP{
-			Timestamp: int64(i),
-			Value:     float64(i)*3.1 - 2.1,
-		}
-		timeseries = append(timeseries, t)
-	}
-	m, c := skyline.LinearRegressionLSE(timeseries)
-	if m != 3.1 || c != 2.1 {
-		t.Fatal("wrong linearregressionlse", t)
-	}
-}
 
 func testEwma(t *testing.T) {
 	series := []float64{0.1, 1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9, 9.01}

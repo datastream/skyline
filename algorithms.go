@@ -2,6 +2,7 @@ package skyline
 
 import (
 	"github.com/datastream/probab/dst"
+	"github.com/gonum/stat"
 	"math"
 	"time"
 )
@@ -52,8 +53,7 @@ func MedianAbsoluteDeviation(timeseries []TimePoint) bool {
 // A timeseries is anomalous if the Z score is greater than the Grubb's score.
 func Grubbs(timeseries []TimePoint) bool {
 	series := ValueArray(timeseries)
-	stdDev := Std(series)
-	mean := Mean(series)
+	mean, stdDev := stat.MeanStdDev(series, nil)
 	tailAverage := TailAvg(series)
 	// http://en.wikipedia.org/wiki/Grubbs'_test_for_outliers
 	// G = (Y - Mean(Y)) / stdDev(Y)
@@ -80,8 +80,7 @@ func FirstHourAverage(timeseries []TimePoint, fullDuration int64) bool {
 			series = append(series, val.GetValue())
 		}
 	}
-	mean := Mean(series)
-	stdDev := Std(series)
+	mean, stdDev := stat.MeanStdDev(series, nil)
 	t := TailAvg(ValueArray(timeseries))
 	return math.Abs(t-mean) > 3*stdDev
 }
@@ -93,8 +92,7 @@ func FirstHourAverage(timeseries []TimePoint, fullDuration int64) bool {
 // is better for detecting anomalies with respect to the entire series.
 func SimpleStddevFromMovingAverage(timeseries []TimePoint) bool {
 	series := ValueArray(timeseries)
-	mean := Mean(series)
-	stdDev := Std(series)
+	mean, stdDev := stat.MeanStdDev(series, nil)
 	t := TailAvg(series)
 	return math.Abs(t-mean) > 3*stdDev
 }
@@ -117,11 +115,11 @@ func StddevFromMovingAverage(timeseries []TimePoint) bool {
 // after subtracting the mean from each data point.
 func MeanSubtractionCumulation(timeseries []TimePoint) bool {
 	series := ValueArray(timeseries)
-	mean := Mean(series[:len(series)-1])
+	mean := stat.Mean(series[:len(series)-1], nil)
 	for i, val := range series {
 		series[i] = val - mean
 	}
-	stdDev := Std(series[:len(series)-1])
+	stdDev := stat.StdDev(series[:len(series)-1], nil)
 	// expAverage = pandas.stats.moments.ewma(series, com=15)
 	return math.Abs(series[len(series)-1]) > 3*stdDev
 }
@@ -130,17 +128,19 @@ func MeanSubtractionCumulation(timeseries []TimePoint) bool {
 // A timeseries is anomalous if the average of the last three datapoints
 // on a projected least squares model is greater than three sigma.
 func LeastSquares(timeseries []TimePoint) bool {
-	m, c := LinearRegressionLSE(timeseries)
+	x := TimeArray64(timeseries)
+	y := ValueArray(timeseries)
+	intercept, slope := stat.LinearRegression(x, y, nil, false)
 	var errs []float64
 	for _, val := range timeseries {
-		projected := m*float64(val.GetTimestamp()) + c
+		projected := slope*float64(val.GetTimestamp()) + intercept
 		errs = append(errs, val.GetValue()-projected)
 	}
 	l := len(errs)
 	if l < 3 {
 		return false
 	}
-	stdDev := Std(errs)
+	stdDev := stat.StdDev(errs, nil)
 	t := (errs[l-1] + errs[l-2] + errs[l-3]) / 3
 	return math.Abs(t) > stdDev*3 && math.Trunc(stdDev) != 0 && math.Trunc(t) != 0
 }
@@ -222,7 +222,6 @@ func IsAnomalouslyAnomalous(trigger_history []TimePoint, new_trigger TimePoint) 
 			intervals = append(intervals, float64(trigger_times[i+1]-trigger_times[i]))
 		}
 	}
-	mean := Mean(intervals)
-	stdDev := Std(intervals)
+	mean, stdDev := stat.MeanStdDev(intervals, nil)
 	return math.Abs(intervals[len(intervals)-1]-mean) > 3*stdDev, trigger_history
 }

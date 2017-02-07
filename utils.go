@@ -15,6 +15,15 @@ func TimeArray(timeseries []TimePoint) []int64 {
 	return t
 }
 
+// TimeArray return all timestamps in timeseries array
+func TimeArray64(timeseries []TimePoint) []float64 {
+	var t []float64
+	for _, val := range timeseries {
+		t = append(t, float64(val.GetTimestamp()))
+	}
+	return t
+}
+
 // ValueArray return all values in timeseries array
 func ValueArray(timeseries []TimePoint) []float64 {
 	var v []float64
