@@ -1,7 +1,7 @@
 package skyline_test
 
 import (
-	"../skyline"
+	"github.com/datastream/skyline"
 	"testing"
 )
 
