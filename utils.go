@@ -15,7 +15,7 @@ func TimeArray(timeseries []TimePoint) []int64 {
 	return t
 }
 
-// TimeArray return all timestamps in timeseries array
+// TimeArray64 return all timestamps in timeseries array
 func TimeArray64(timeseries []TimePoint) []float64 {
 	var t []float64
 	for _, val := range timeseries {
