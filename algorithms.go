@@ -2,9 +2,12 @@ package skyline
 
 import (
 	"github.com/datastream/probab/dst"
-	"github.com/gonum/stat"
+
 	"math"
 	"time"
+
+	"github.com/datastream/adf"
+	"github.com/gonum/stat"
 )
 
 // This is no man's land. Do anything you want in here,
@@ -193,6 +196,11 @@ func KsTest(timeseries []TimePoint) bool {
 	}
 	_, ksPValue, ksD := KolmogorovSmirnov(reference, probe, 0.05)
 	if ksPValue < 0.05 && ksD > 0.5 {
+		ad := adf.New(reference, adf.DefaultPValue, 10)
+		ad.Run()
+		if ad.IsStationary() {
+			return true
+		}
 		/*
 			adf := ADFuller(reference, 10)
 			if adf[1] < 0.05 {

@@ -1,8 +1,9 @@
 package skyline_test
 
 import (
-	"github.com/datastream/skyline"
 	"testing"
+
+	"github.com/datastream/skyline"
 )
 
 func TestMedian(t *testing.T) {
