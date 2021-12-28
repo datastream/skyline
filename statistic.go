@@ -196,24 +196,3 @@ func location(array []float64, key float64) int {
 	}
 	return i
 }
-
-/*
-// adfuller
-func ADFuller(x []float64, maxlog int) []float64 {
-	trenddict := make(map[int]string)
-	regression := "nc"
-	nobs := len(x)
-	xdiff := arraydiff(x)
-	xdall = lagmat(xdiff)
-	return xdiff
-}
-
-func arraydiff(x []float64) []float64 {
-	var rst []float64
-	l := len(x) -1
-	for i:= 0; i< l; i++ {
-		rst = append(rst, x[i+1] - x[i])
-	}
-	return rst
-}
-*/
